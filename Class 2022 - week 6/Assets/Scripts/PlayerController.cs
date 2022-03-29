@@ -19,11 +19,21 @@ public class PlayerController : MonoBehaviour
     public int curHealth;
     public int maxHealth = 100;
 
+    public float knockback; //power
+    public float knockbackLength; //how long we going to get pushed back
+    public float knockbackCount;
+    public bool knockFromRight;//direction where we going to get pushed
+
+    //Coin
+    public int coinValue;
+
+    private LevelManager theLevelManager;
 
     // Start is called before the first frame update
     void Start()
     {
         myRigidBody = GetComponent<Rigidbody2D>();
+        theLevelManager = FindObjectOfType<LevelManager>();
         myAnim = GetComponent<Animator>();
         curHealth = maxHealth;
 
@@ -51,32 +61,46 @@ public class PlayerController : MonoBehaviour
         myAnim.SetFloat("Speed", Mathf.Abs(myRigidBody.velocity.x));
         myAnim.SetBool("Grounded", isGrounded);
 
+        if (knockbackCount <= 0)
 
-        // Player moving right
+            // Player moving right
 
-        if (Input.GetAxisRaw("Horizontal") > 0f)
-        {
-            myRigidBody.velocity = new Vector2(moveSpeed, myRigidBody.velocity.y);
+            if (Input.GetAxisRaw("Horizontal") > 0f)
+            {
+                myRigidBody.velocity = new Vector2(moveSpeed, myRigidBody.velocity.y);
 
-            transform.localScale = new Vector2(1f, 1f);
+                transform.localScale = new Vector2(1f, 1f);
 
-        }
+            }
 
-        // Player moving left
+            // Player moving left
 
-        else if (Input.GetAxisRaw("Horizontal") < 0f)
-        {
-            myRigidBody.velocity = new Vector2(-moveSpeed, myRigidBody.velocity.y);
-            transform.localScale = new Vector2(-1f, 1f);
+            else if (Input.GetAxisRaw("Horizontal") < 0f)
+            {
+                myRigidBody.velocity = new Vector2(-moveSpeed, myRigidBody.velocity.y);
+                transform.localScale = new Vector2(-1f, 1f);
 
-        }
+            }
 
 
-        // No slide
+            // No slide
 
+            else
+            {
+                myRigidBody.velocity = new Vector2(0f, myRigidBody.velocity.y);
+
+            }
+
+        //knockback
         else
         {
-            myRigidBody.velocity = new Vector2(0f, myRigidBody.velocity.y);
+            if (knockFromRight)
+
+                myRigidBody.velocity = new Vector2(-knockback, knockback);
+
+            if (!knockFromRight)
+                myRigidBody.velocity = new Vector2(knockback, knockback);
+            knockbackCount -= Time.deltaTime;
 
         }
 
@@ -101,6 +125,17 @@ public class PlayerController : MonoBehaviour
     }
 
 
+    //Player Damage
+
+    public void Damage(int dmg)
+    {
+        curHealth -= dmg;
+        gameObject.GetComponent<Animation>().Play("Player_redflash");
+    }
+
+
+
+
     //  Parent player to moving platform
 
     void OnCollisionEnter2D(Collision2D other)
@@ -122,6 +157,13 @@ public class PlayerController : MonoBehaviour
         {
 
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+
+        }
+
+        else if (other.tag == "Coin")
+        {
+            theLevelManager.AddCoins(coinValue);
+            Destroy(other.gameObject);
 
         }
 

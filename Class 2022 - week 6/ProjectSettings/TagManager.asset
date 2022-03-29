@@ -6,6 +6,7 @@ TagManager:
   tags:
   - MovingPlatform
   - Kill Plane
+  - Coin
   layers:
   - Default
   - TransparentFX
