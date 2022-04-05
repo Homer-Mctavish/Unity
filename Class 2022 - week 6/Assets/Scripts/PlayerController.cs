@@ -19,15 +19,23 @@ public class PlayerController : MonoBehaviour
     public int curHealth;
     public int maxHealth = 100;
 
+
     public float knockback; //power
     public float knockbackLength; //how long we going to get pushed back
     public float knockbackCount;
     public bool knockFromRight;//direction where we going to get pushed
 
+
+    private LevelManager theLevelManager;
+
     //Coin
     public int coinValue;
 
-    private LevelManager theLevelManager;
+    //Sound
+
+    public AudioClip JumpSound;
+    public AudioClip CoinSound;
+    private AudioSource source;
 
     // Start is called before the first frame update
     void Start()
@@ -35,6 +43,7 @@ public class PlayerController : MonoBehaviour
         myRigidBody = GetComponent<Rigidbody2D>();
         theLevelManager = FindObjectOfType<LevelManager>();
         myAnim = GetComponent<Animator>();
+        source = GetComponent<AudioSource>();
         curHealth = maxHealth;
 
     }
@@ -50,7 +59,9 @@ public class PlayerController : MonoBehaviour
         if (Input.GetButtonDown("Jump") && isGrounded)
         {
             myRigidBody.velocity = new Vector2(myRigidBody.velocity.x, jumpSpeed);
+            source.PlayOneShot(JumpSound, 1F);
         }
+
 
     }
 
@@ -61,16 +72,15 @@ public class PlayerController : MonoBehaviour
         myAnim.SetFloat("Speed", Mathf.Abs(myRigidBody.velocity.x));
         myAnim.SetBool("Grounded", isGrounded);
 
+
         if (knockbackCount <= 0)
 
-            // Player moving right
-
+        // Player moving right
+        {
             if (Input.GetAxisRaw("Horizontal") > 0f)
             {
                 myRigidBody.velocity = new Vector2(moveSpeed, myRigidBody.velocity.y);
-
                 transform.localScale = new Vector2(1f, 1f);
-
             }
 
             // Player moving left
@@ -88,8 +98,8 @@ public class PlayerController : MonoBehaviour
             else
             {
                 myRigidBody.velocity = new Vector2(0f, myRigidBody.velocity.y);
-
             }
+        }
 
         //knockback
         else
@@ -114,7 +124,10 @@ public class PlayerController : MonoBehaviour
         {
             Die();
         }
+
     }
+
+
 
     //Death
     void Die()
@@ -131,6 +144,7 @@ public class PlayerController : MonoBehaviour
     {
         curHealth -= dmg;
         gameObject.GetComponent<Animation>().Play("Player_redflash");
+
     }
 
 
@@ -159,17 +173,15 @@ public class PlayerController : MonoBehaviour
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
 
         }
-
         else if (other.tag == "Coin")
         {
             theLevelManager.AddCoins(coinValue);
+            source.PlayOneShot(CoinSound, 1F);
             Destroy(other.gameObject);
-
         }
 
 
     }
-
 
 }
 
